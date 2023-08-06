@@ -145,5 +145,6 @@ export default {
 .font {
     font-family: 'BellotaText';
     font-size: 14px;
+    color: black;
 }
 </style>

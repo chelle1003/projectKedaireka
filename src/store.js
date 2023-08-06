@@ -1,14 +1,15 @@
 import { createStore } from 'vuex';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
-
+const USER_ROLE_KEY = 'userRole';
 export default createStore({
     state: {
-        userRole: '',
+        userRole: localStorage.getItem(USER_ROLE_KEY) || '',
     },
     mutations: {
         setUser(state, user) {
-            state.userRole = user ? 'admin' : '';
+            state.userRole = user;
+            localStorage.setItem(USER_ROLE_KEY, user);
         },
     },
     actions: {
@@ -26,5 +27,4 @@ export default createStore({
             });
         },
     },
-
 });

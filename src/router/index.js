@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import store from '../store';
 
 const routes = [
   {
@@ -79,4 +80,20 @@ const router = createRouter({
   routes
 })
 
-export default router
+router.beforeEach((to, from, next) => {
+  const authenticatedRoutes = ['/DataKarbon', '/DataDevice', '/TambahData', '/TambahDevice', '/KalkulatorPage'];
+
+  if (authenticatedRoutes.includes(to.path) && !userIsAuthenticated()) {
+    next('/HalamanLogin');
+  } else if (to.path === '/HalamanLogin' && userIsAuthenticated()) {
+    next('/Beranda');
+  }else {
+    next();
+  }
+});
+
+function userIsAuthenticated() {
+  return store.state.userRole === 'admin';
+}
+
+export default router;

@@ -1,13 +1,13 @@
 <template>
-  <v-app style="background-color: #134280; ">
+  <v-app style="background-color: #134280; height: 80%">
     <v-container>
       <v-img src="droneISAI.png" contain alt="logo"
-        style="width: 350px; margin-left: 50px; margin: auto; margin-top:75px; "></v-img>
+        style="width: 350px;  margin-left: 50px; margin: auto; margin-top: 90px; "></v-img>
       <v-card tile elevation="0" style="width: 400px; height:300px; margin-left: 33%; background-color: #134280; ">
         <v-card-title class="home">
 
         </v-card-title>
-        <v-form lazy validation>
+        <v-form lazy validation @keyup.enter="login">
           <v-card-text>
             <v-text-field hide-details :rules="emailRules" label="E-Mail" type="text" v-model="email"
               style="background-color: white;"></v-text-field>

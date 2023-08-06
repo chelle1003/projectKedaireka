@@ -20,21 +20,23 @@
 
       </v-row>
 
-      <v-btn style="font-family: 'BellotaText'; color: white;" color="#eb5144" class="mt-5 ml-8 text-none" @click="clearSelection()" >Hapus Pilihan</v-btn>
+      <v-btn style="font-family: 'BellotaText'; color: white;" color="#eb5144" class="mt-5 ml-8 text-none"
+        @click="clearSelection()">Hapus Pilihan</v-btn>
 
       <v-spacer></v-spacer>
       <v-spacer></v-spacer>
     </div>
   </div>
 
-  <GoogleMap api-key="AIzaSyCi-XOBnxgXNnkw_a69Zbwz8s6P5l52NwQ" style="width: 100%; height: 100%" :center="{ lat: -7.610414032232811, lng: 110.69368913769722 }" :zoom="19">
+  <GoogleMap api-key="AIzaSyCi-XOBnxgXNnkw_a69Zbwz8s6P5l52NwQ" style="width: 100%; height: 100%"
+    :center="{ lat: -7.610414032232811, lng: 110.69368913769722 }" :zoom="19">
     <Marker v-for="(marker) in filteredMarkers" :key="marker.id" :options="marker" @click="createChart(marker)">
       <InfoWindow :position="marker.position" style="font-family: 'BellotaText'">
         <div style="width: 350px">
           <p style="font-size: 15px">Nama Lahan : {{ marker.namaLahan }}</p>
           <p style="font-size: 15px">Komoditas : {{ marker.komoditas }}</p>
           <p style="font-size: 15px">
-            Tanggal Sampling : {{ marker.tanggalSampling }}
+            Tanggal Sampling : {{ formatDate(marker.tanggalSampling) }}
           </p>
           <v-spacer></v-spacer>
           <br />
@@ -44,7 +46,6 @@
       </InfoWindow>
     </Marker>
   </GoogleMap>
-  
 </template>
 
 <script>
@@ -93,15 +94,27 @@ export default defineComponent({
             new Set(this.data.map((item) => item.properties.loc))
           );
 
+          this.Lokasi.sort(function (a, b) {
+            return a.localeCompare(b);
+          });
+
           // Ambil Data komoditas
           this.Komoditas = Array.from(
             new Set(this.data.map((item) => item.properties.comodity))
           );
 
+          this.Komoditas.sort(function (a, b) {
+            return a.localeCompare(b);
+          });
+
           // Ambil Data perangkat
           this.Devices = Array.from(
             new Set(this.data.map((item) => item.properties.device))
           );
+
+          this.Devices.sort(function (a, b) {
+            return a.localeCompare(b);
+          });
 
           // Buat markerOptions
           this.markerOptions = this.data
@@ -248,7 +261,15 @@ export default defineComponent({
       } catch {
         console.error()
       }
-    }
+    },
+    formatDate(date) {
+            const parts = date.split('-');
+            if (parts.length === 3) {
+                const [year, month, day] = parts;
+                return `${day}-${month}-${year}`;
+            }
+            return date;
+        },
   },
 });
 </script>

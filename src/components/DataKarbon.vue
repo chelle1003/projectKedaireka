@@ -1,12 +1,12 @@
 <template>
-    <v-app style="background-color: #143280; margin-top: 80px;  font-family: 'BellotaText';">
+    <v-app style="background-color: #143280; margin-top: 80px;  font-family: 'BellotaText'; height: 1100px;">
         <v-container style="max-width: 1354px;">
             <h1 style="margin-top: 15px; margin-bottom: 15px; color: white;">Data Karbon</h1>
             <router-link to="/TambahData"><v-btn to="/TambahData" class="mb-5"
                     style="background-color: #5AC979; font-weight: bold; color: white;">Tambah Data</v-btn></router-link>
             <v-btn class="mb-2" density="compact" prepend-icon="mdi-filter" @click="getFilter()"
                 style="margin-left: 10px; background-color: #white; color: black;">filter</v-btn>
-            <v-btn @click="exportToPdf" density="compact" style="float: right;" class="mt-7">Unduh Pdf</v-btn>
+            <v-btn @click="showDownloadOptions" density="compact" style="float: right;" class="mt-7">Unduh Data</v-btn>
 
             <v-table density="compact" style="width: 100%; background-color: transparent;" fixed-header height="700px">
                 <thead style="background-color: #143280; text-align: center;">
@@ -155,6 +155,24 @@
             </v-card>
         </v-dialog>
     </template>
+    <v-dialog v-model="downloadDialog" max-width="400" style="font-family: 'BellotaText';">
+        <v-card>
+            <v-card-title class="headline">Unduh Data Karbon</v-card-title>
+            <v-card-text>
+                <v-radio-group v-model="downloadOption">
+                    <v-radio label="PDF" value="pdf"></v-radio>
+                    <v-radio label="CSV" value="csv"></v-radio>
+                </v-radio-group>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="downloadDialog = false"
+                    style="background-color:#eb5144; color:white; font-weight: bold; margin-right: 10px;">Batal</v-btn>
+                <v-btn @click="downloadData"
+                    style=" background-color:#74c212 ; color: white; font-weight: bold;">Unduh</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 
@@ -168,6 +186,8 @@ export default {
     data() {
         return {
             selectedLocation: '',
+            downloadDialog: false,
+            downloadOption: 'pdf',
             selectedKomoditas: '',
             selectedHST: '',
             pilihLokasi: '',
@@ -203,6 +223,18 @@ export default {
             })
     },
     methods: {
+        showDownloadOptions() {
+            this.downloadDialog = true;
+        },
+
+        downloadData() {
+            this.downloadDialog = false;
+            if (this.downloadOption === 'pdf') {
+                this.exportToPdf();
+            } else if (this.downloadOption === 'csv') {
+                this.exportToCsv();
+            }
+        },
         exportToPdf() {
             if (this.content) {
                 const documentDefinition = {
@@ -212,7 +244,7 @@ export default {
                         {
                             table: {
                                 headerRows: 1,
-                                widths: ['auto', 'auto', 'auto', 'auto', 50, 'auto', 'auto', 'auto', 'auto','auto','auto'],
+                                widths: ['auto', 'auto', 'auto', 'auto', 50, 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
                                 body: [
                                     [
                                         'No',
@@ -257,6 +289,34 @@ export default {
 
                 pdfMake.vfs = pdfFonts.pdfMake.vfs;
                 pdfMake.createPdf(documentDefinition).download('data_karbon.pdf');
+            }
+        },
+        exportToCsv() {
+            if (this.content) {
+                const csvContent = [
+                    ['No', 'Kode Sampel', 'Lokasi', 'Komoditas', 'HST', 'Karbon Tanah', 'Karbon Tanaman', 'Emisi Tanah', 'Emisi Tanaman', 'Emisi Lingkungan', 'tanggal'],
+                    ...this.content.map((item, index) => [
+                        index + 1,
+                        item.properties.id_sample,
+                        item.properties.loc,
+                        item.properties.comodity,
+                        item.properties.hst,
+                        item.properties.carbon_tanah,
+                        item.properties.carbon_tanaman,
+                        item.properties.emisi_tanah,
+                        item.properties.emisi_tanaman,
+                        item.properties.emisi_lingkungan,
+                        item.properties.date
+                    ]),
+                ].map(row => row.join(','));
+
+                const csvString = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent.join('\n'));
+                const downloadLink = document.createElement('a');
+                downloadLink.setAttribute('href', csvString);
+                downloadLink.setAttribute('download', 'data_karbon.csv');
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
             }
         },
         closeFilter() {
@@ -368,5 +428,5 @@ export default {
 .v-table {
     font-size: 14px;
     text-align: center;
-}</style>
-
+}
+</style>

@@ -1,14 +1,14 @@
 <template>
-    <v-app style="background-color: #143280; margin-top: 80px;font-family: 'BellotaText';"  >
+    <v-app style="background-color: #143280; margin-top: 80px;font-family: 'BellotaText';">
         <v-container>
             <h1 style="margin-top: 15px; margin-bottom: 15px; color: white;">Data Device</h1>
             <router-link to="/TambahDevice">
                 <v-btn class="mb-5" style="background-color: #5AC979; color: white; font-weight: bold;"> Tambah
                     Device</v-btn>
             </router-link>
-            <v-btn class="mb-2" prepend-icon="mdi-filter" @click="getFilter()"
-                density="compact" style=" margin-left: 10px; background-color: #white; color: black;">Filter</v-btn>
-            <v-btn class="mt-7" style="float: right;" density="compact" @click="exportToPdf">Unduh PDF </v-btn>
+            <v-btn class="mb-2" prepend-icon="mdi-filter" @click="getFilter()" density="compact"
+                style=" margin-left: 10px; background-color: #white; color: black;">Filter</v-btn>
+            <v-btn class="mt-7" style="float: right;" density="compact" @click="showDownloadOptions">Unduh Data</v-btn>
             <v-table>
                 <thead style="background-color: #BFC1cc;">
                     <tr>
@@ -16,7 +16,7 @@
                         <th style="width: 155px;text-align: center;">Nomor Seri</th>
                         <th style="width: 150px;text-align: center;">Tipe Device</th>
                         <th style="width: 125px;text-align: center;">Lattitude</th>
-                        <th style="width: 135px;text-align: center;">Longtitude</th>
+                        <th style="width: 135px;text-align: center;">Longitude</th>
                         <th style="width: 120px;text-align: center;">Lokasi</th>
                         <th style="width: 230px; text-align: center;">Tanggal Pemasangan</th>
                         <th style="text-align: center;">Action</th>
@@ -126,6 +126,24 @@
             </v-card>
         </v-dialog>
     </template>
+    <v-dialog v-model="downloadDialog" max-width="400" style="font-family: 'BellotaText';">
+        <v-card>
+            <v-card-title class="headline">Unduh Data Device</v-card-title>
+            <v-card-text>
+                <v-radio-group v-model="downloadOption">
+                    <v-radio label="PDF" value="pdf"></v-radio>
+                    <v-radio label="CSV" value="csv"></v-radio>
+                </v-radio-group>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="downloadDialog = false"
+                    style="background-color:#eb5144; color:white; font-weight: bold; margin-right: 10px;">Batal</v-btn>
+                <v-btn @click="downloadData"
+                    style=" background-color:#74c212 ; color: white; font-weight: bold;">Unduh</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
@@ -138,6 +156,8 @@ export default {
     data() {
         return {
             selectedLocation: '',
+            downloadDialog: false,
+            downloadOption: 'pdf',
             selectedDevice: '',
             pilihDevice: '',
             pilihLokasi: '',
@@ -153,10 +173,22 @@ export default {
             ubah_lat: '',
             ubah_tipedevice: '',
             dialogEdit: false,
-            dialogFilter:false
+            dialogFilter: false
         }
     },
     methods: {
+        showDownloadOptions() {
+            this.downloadDialog = true;
+        },
+
+        downloadData() {
+            this.downloadDialog = false;
+            if (this.downloadOption === 'pdf') {
+                this.exportToPdf();
+            } else if (this.downloadOption === 'csv') {
+                this.exportToCsv();
+            }
+        },
         exportToPdf() {
             if (this.data) {
                 const documentDefinition = {
@@ -201,6 +233,30 @@ export default {
 
                 pdfMake.vfs = pdfFonts.pdfMake.vfs;
                 pdfMake.createPdf(documentDefinition).download('data_device.pdf');
+            }
+        },
+        exportToCsv() {
+            if (this.data) {
+                const csvContent = [
+                    ['No', 'Nomor Seri', 'Lokasi', 'Tipe Device', 'Lattitude', 'Longitude', 'Lokasi', 'Tanggal'],
+                    ...this.data.map((item, index) => [
+                        index + 1,
+                        item.nomorseri,
+                        item.tipedevice,
+                        item.lattitude,
+                        item.longitude,
+                        item.lokasi,
+                        item.tanggal,
+                    ]),
+                ].map(row => row.join(','));
+
+                const csvString = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent.join('\n'));
+                const downloadLink = document.createElement('a');
+                downloadLink.setAttribute('href', csvString);
+                downloadLink.setAttribute('download', 'data_device.csv');
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
             }
         },
         getEdit: function (item) {

@@ -28,4 +28,4 @@ production:
       - main
    script:
       - pip install awscli
-      - aws s3 sync ./dist s3://kedaireka1.fti.ukdw.ac.id
+      - aws s3 sync ./dist s3://beehive.fti.ukdw.ac.id
